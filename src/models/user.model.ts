@@ -1,30 +1,23 @@
-import { Request, Response } from "express";
 import pool from "../database";
+import { QueryResult } from "pg";
 
-
-export const getUsers = async ()=>{
-  const result = await pool.query("SELECT * FROM users");
-  return result.rows;
-}
-
-export const createUser = async (userData: { name: string, email: string, password: string }) => {
+export const getUsers = async (): Promise<unknown[]> => {
   try {
-    const { name, email, password } = userData;
-
-    if (!name || !email || !password) {
-      throw new Error("All fields are required.");
-    }
-
-    const query = `INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *`;
-    const values = [name, email, password];
-
-    const result = await pool.query(query, values);
-    return result.rows[0];
-  } catch (error: any) {
-    if (error.code === "23505") {
-      throw new Error("Email already exists.");
-    }
-    throw error;
+    const response: QueryResult = await pool.query("SELECT * FROM users");
+    return response.rows;
+  } catch (error) {
+    throw new Error("Error fetching users: " + error);
   }
 };
 
+export const createUser = async (name: string, email: string, password: string): Promise<unknown> => {
+  try {
+    const response: QueryResult = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
+      [name, email, password]
+    );
+    return response.rows[0];
+  } catch (error) {
+    throw new Error("Error creating user: " + error);
+  }
+};
