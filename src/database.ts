@@ -18,18 +18,20 @@ const initDB = async () => {
     const client = await adminPool.connect();
     console.log("Connection established");
 
-    const checkDB = await client.query(`SELECT 1 FROM pg_database WHERE datname = $1`, [DB_NAME]);
+    const checkDB = await client.query(
+      `SELECT 1 FROM pg_database WHERE datname = $1`, 
+      [DB_NAME]
+    );
 
     if (checkDB.rowCount === 0) {
-      console.log(`DB"${DB_NAME}" no created`);
+      console.log(`⚠️ The database "${DB_NAME}" does not exist. Creating...`);
       await client.query(`CREATE DATABASE "${DB_NAME}"`); 
-      console.log(`DB "${DB_NAME}" created successfully`);
+      console.log(`Database "${DB_NAME}" successfully created.`);
     }
 
     client.release();
   } catch (error) {
-    console.error( {error: error} );
-    process.exit(1);
+    console.error("Error initializing the database:", error);
   }
 };
 
